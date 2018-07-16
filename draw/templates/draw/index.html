@@ -2,20 +2,13 @@
 
 <!DOCTYPE html>
 <html>
-  
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ################################## Exercies Start ##################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  
-<!--   <head>
+  <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <title>P4 Drawing</title>
 
-    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
-    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+    <link rel="stylesheet" type="text/css" href="/static/draw/vendor/bootstrap/css/bootstrap.min.css">
+    <script type="text/javascript" src="/static/draw/vendor/jquery/jquery-3.3.1.min.js"></script>
+    <script type="text/javascript" src="/static/draw/vendor/paper/paper-full.min.js"></script>
 
     <style type="text/css">
     </style>
@@ -35,8 +28,8 @@
     var socket = new WebSocket('ws://p4-jakehong0521-jakehong0521206332.codeanyapp.com:8765/');
     
     var id;
-    
     var size;
+    var prev;
     
     function getParameterByName(name) {
       var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
@@ -46,25 +39,36 @@
     socket.onopen = function(event) {
       id = "#"+((1<<24)*Math.random()|0).toString(16);
       size = getParameterByName('size');
-      console.log(size);
     };
     
     socket.onmessage = function(msg) {
       var data = JSON.parse(msg.data);
-      console.log(data);
-      if ((size == "small" && id == data.id) || (size == "large")) {
-        var point = new paper.Shape.Circle({
-          center: [data.x, data.y],
-          radius: 15,
-          strokeColor: data.id,
-          fillColor: data.id
-        });
+      if (size == "large" && data.type == "large") {
+        var data = JSON.parse(msg.data);
+        var first = new paper.Point(data.prev[1], data.prev[2]);
+        var second = new paper.Point(data.curr[1], data.curr[2]);
+        var line = new paper.Path.Line(first, second);
+        line.strokeColor = data.id;
+      } else if (size == "small" && id == data.id && data.type == 'small') {
+        if (prev == null) {
+          prev = new paper.Point(data.x, data.y);
+        } else {
+          console.log(size);
+          var curr = new paper.Point(data.x, data.y);
+          var line = new paper.Path.Line(prev, curr);
+          line.strokeColor = id;
+          var toLarge = JSON.stringify({type: "large", id: id, prev: prev, curr: curr});
+          prev = curr;
+          socket.send(toLarge);
+        }
       }
     };
     
     tool.onMouseMove = function(event) {
-      var msg = JSON.stringify({x: event.point.x, y: event.point.y, id: id});
-      socket.send(msg);
+      if (size != "large") {
+        var msg = JSON.stringify({type: 'small', x: event.point.x, y: event.point.y, id: id});
+        socket.send(msg);
+      }
     }
     
     socket.onclose = function (e) {
@@ -88,94 +92,6 @@
       }
     });
   </script>
-   -->
-
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ################################### Exercise End ###################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  
-  
-  
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ################################### Custom Start ###################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>P4 Drawing</title>
-
-    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
-    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
-    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
-
-    <style type="text/css">
-      head, body {
-        width: 100%;
-        height: 100%;
-      }
-      
-      
-    </style>
-  </head>
-  
-  <body>
-    <canvas id="myCanvas" width="750px" height="750px" style="border:1px solid #000000;"></canvas>
-  </body>
-  
-  <script>
-
-    var canvas = document.getElementById('myCanvas');
-    paper.setup(canvas);
-    var tool = new paper.Tool();
-    
-    var bedroom = {
-      item: null,
-      lastClicked: null,
-      filePath: '/static/draw/bedroom.svg'
-    };
-    
-    paper.project.importSVG(bedroom.filePath, function(item) {
-      bedroom.item = item._children["design-freepik"];
-      paper.project.insertLayer(0, bedroom.item);
-    });
-    
-    var socket = new WebSocket('ws://p4-jakehong0521-jakehong0521206332.codeanyapp.com:8765/');
-    
-    var room;
-    
-    function getParameterByName(name) {
-      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
-      return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
-    }
-    
-    socket.onopen = function(event) {
-      room = getParameterByName('room');
-    };
-    
-    socket.onmessage = function(msg) {
-      var data = JSON.parse(msg.data);
-    };
-    
-    tool.onMouseDown = function(event) {
-      var hit = bedroom.item.hitTest(event.point, {tolerance: 0, fill: true});
-      if (hit) {
-        hit.item.fillColor = "skyblue";
-//           cp.history[cp.history.length - 1];
-      }
-    }
-    
-  </script>
-  
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ################################### Custom End #####################################  -->
-  <!--  ####################################################################################  -->
-  <!--  ####################################################################################  -->
-    
 </html>
 
 
