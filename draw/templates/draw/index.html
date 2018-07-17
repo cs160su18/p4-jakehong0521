@@ -4,7 +4,7 @@
 <html>
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>P4 Drawing</title>
+    <title>P4 Custom</title>
 
     <link rel="stylesheet" type="text/css" href="/static/draw/vendor/bootstrap/css/bootstrap.min.css">
     <script type="text/javascript" src="/static/draw/vendor/jquery/jquery-3.3.1.min.js"></script>
@@ -14,22 +14,213 @@
     </style>
   </head>
   
+  <style type="text/css">
+    
+    html, body {
+      height: 100%;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-style: solid;
+      text-align: center;
+    }
+    
+    .menu {
+      height: 100%;
+      width: 100%;
+      border-style: solid;
+      font-size: 24px;
+      background: #E0FFFF;
+    }
+    
+    .house {
+      flex: 9;
+      display: flex;
+    }
+    
+    #bedroom {
+      flex: 4;
+      height: 100%;
+      width: 100%;
+    }
+    
+    #livingroom {
+      flex: 6;
+      height: 100%;
+      width: 100%;
+    }
+    
+    .blank {
+      height: 100%;
+      width: 100%;
+      font-size: 28px;
+    }
+    
+    .livingroom {
+      color: white;
+      background: white;
+      font-size: 20px;
+      z-index: 1;
+    }
+    
+    .bedroom {
+      color: white;
+      background: white;
+      font-size: 20px;
+      z-index: 1;
+    }
+    
+    #couch1 {
+      height: 15%;
+      width: 40%;
+      border-radius: 15px;
+      z-index: 2;
+    }
+    
+    #couch2 {
+      height: 50%;
+      width: 20%;
+      border-radius: 15px;
+      z-index: 2;
+    }
+    
+    #desk1 {
+      height: 20%;
+      width: 50%;
+      float: right;
+      z-index: 2;
+    }
+    
+    #desk2 {
+      height: 80%;
+      bottom: 0;
+      z-index: 2;
+    }
+    
+    #closet1 {
+      height: 100%;
+      width: 20%;
+      float: right;
+      writing-mode: tb-rl;
+      z-index: 2;
+    }
+    
+    #bed1 {
+      height: 100%;
+      width: 40%;
+      border-radius: 10px;
+      z-index: 2;
+    }
+    
+    #palatte {
+      width: 100%;
+      height; 100%;
+      background-color: #f1f1f1;
+      display: flex;
+      flex-wrap: wrap;
+      top: 0;
+		}
+    
+    .swatch {
+      width: 24px;
+      height: 24px;
+      -moz-border-radius: 12px;
+      -webkit-border-radius: 12px;
+      border-radius: 12px;
+      margin: 3px;
+    }
+    
+  </style>
+  
   <body>
-    <canvas id="myCanvas" width="750px" height="750px" style="border:1px solid #000000;"></canvas>
+    <div class="menu" style="flex: 1; border-style: solid; display: flex; flex-direction: row;">
+      <div class="menu" style="flex: 1;">&larr;</div>
+      <div class="menu" id="roomtype" style="flex: 5;"></div>
+      <div class="menu" id='display' style="flex: 2.5;">Large Display</div>
+      <div class="menu" style="flex: 1.5;">Edit</div>
+    </div>
+    <div class='blank' style="flex: 9; display: flex; flex-direction: row">
+      <div class='blank' style='flex: 0.5'></div>
+      <div class='blank' style='flex: 8; display: flex; flex-direction: column'>
+        <div class='blank' style='flex: 1;'></div>
+        <div class='blank' style='flex: 8; display: flex; flex-direction: row'>
+          <div class='livingroom' id='livingroom' style='z-index: '>
+            <div class='livingroom' id='couch1'>Couch 1</div>
+            <div class='livingroom' id='couch2'>Couch 2</div>
+            <div class='blank' style='height: 15%'></div>
+            <div class='livingroom' id='desk1'>Desk 1</div>
+          </div>
+          <div class='bedroom' id='bedroom'>
+            <div class='row' style='height: 30%; width: 100%; margin: 0;'>
+              <div class='blank' style='height: 100%; width: 80%;'></div>
+              <div class='bedroom' id="closet1">Closet 1</div>
+            </div>
+            <div class='blank' style='height: 20%; width: 100%;'></div>
+            <div class='row' style='height: 50%; width: 100%; margin: 0;'>
+              <div style='height: 100%; width: 30%;'>
+                <div class='blank' style='height: 20%; width: 100%;'></div>  
+                <div class='bedroom' id='desk2'>Desk 2</div>
+              </div>
+              <div class='blank' style='height: 100%; width: 30%;'></div>
+              <div class='bedroom' id='bed1'>Bed 1</div>
+            </div>
+          </div>
+        </div>
+        <div class='blank' style='flex: 1;'></div>
+      </div>
+      <div class='blank' style='flex: 0.5;'></div>
+      <div class='blank' id='palatte' style='flex: 1; display: flex; border-style: solid'></div>
+    </div>
+    
   </body>
   
   <script>
-
-    // setting up the canvas and one paper tool
-    var canvas = document.getElementById('myCanvas');
-    paper.setup(canvas);
-    var tool = new paper.Tool();
+    var cp = {
+//       history: ["#000000"], // black selected by default
+      options: [],
+      $container: $('#palatte')
+    }
+    
+    function createColorPalette(colors){
+      for (var i = colors.length - 1; i >= 0; i--) {
+        var $swatch = $("<div>").css("background-color", colors[i]).addClass("swatch");
+        $swatch.click(function() {
+          color = $(this).css("background-color");
+        });
+        cp.$container.append($swatch);
+      }
+    }
+    
+    function getColorsCreatePalette(){
+      cp.$container.html(" ");
+      $.getJSON('/static/draw/vendor/material/material-colors.json', function(colors) {
+        var keys = Object.keys(colors);
+        for (var i = keys.length - 1; i >= 0; i--) {
+          cp.options.push(colors[keys[i]][500]);
+        }
+        createColorPalette(cp.options);
+      });
+    }
     
     var socket = new WebSocket('ws://p4-jakehong0521-jakehong0521206332.codeanyapp.com:8765/');
+    var room;
     
-    var id;
-    var size;
-    var prev;
+    var color = 'white';
+    var menu = document.getElementsByClassName('menu');
+    var BR = document.getElementsByClassName('bedroom');
+    var LR = document.getElementsByClassName('livingroom');
+    
+    var LRfloor = document.getElementById('livingroom');
+    var LRcouch1 = document.getElementById('couch1');
+    var LRcouch2 = document.getElementById('couch2');
+    var LRdesk1 = document.getElementById('desk1');
+    var LRdesk1 = document.getElementById('desk1');
+    
+    var BRfloor = document.getElementById('bedroom');
+    var BRdesk2 = document.getElementById('desk2');
+    var BRcloset1 = document.getElementById('closet1');
+    var BRbed1 = document.getElementById('bed1');
+    
     
     function getParameterByName(name) {
       var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
@@ -37,66 +228,105 @@
     }
     
     socket.onopen = function(event) {
-      id = "#"+((1<<24)*Math.random()|0).toString(16);
-      size = getParameterByName('size');
+      room = getParameterByName('room');
+      document.getElementById('roomtype').innerHTML = room;
+      if (room == 'Home') {
+        for (var i = 0; i < menu.length; i++) {
+          menu[i].style.background = 'black';
+          menu[i].style.border = 'solid black';
+          menu[i].style.color = 'black';
+        }
+        document.getElementById('palatte').style.background = 'black';
+        document.getElementById('palatte').style.border = 'solid black';
+      }
+      if (room == "Bedroom" || room == "Home") {
+        for (var i = 0; i < BR.length; i++) {
+          BR[i].style.border = 'solid black';
+          BR[i].style.color = 'black';
+        }
+      }
+      if (room == "Livingroom" || room == "Home") {
+        for (var i = 0; i < LR.length; i++) {
+          LR[i].style.border = 'solid black';
+          LR[i].style.color = 'black';
+        }
+      }
+      if (room == "Livingroom" || room == "Bedroom") {
+        getColorsCreatePalette();
+      }
     };
+    
+    LRfloor.addEventListener('click', function(event) {
+      if (room == 'Livingroom') {
+        var msg = JSON.stringify({room: room, target: LRfloor.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    LRcouch1.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Livingroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    LRcouch2.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Livingroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    LRdesk1.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Livingroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    BRfloor.addEventListener('click', function(event) {
+      if (room == 'Bedroom') {
+        var msg = JSON.stringify({room: room, target: BRfloor.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    BRbed1.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Bedroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    BRcloset1.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Bedroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
+    
+    BRdesk2.addEventListener('click', function(event) {
+      event.stopPropagation();
+      if (room == 'Bedroom') {
+        var msg = JSON.stringify({room: room, target: this.id, color: color});
+        socket.send(msg);
+      }
+    })
     
     socket.onmessage = function(msg) {
       var data = JSON.parse(msg.data);
-      if (size == "large" && data.type == "large") {
-        var data = JSON.parse(msg.data);
-        var first = new paper.Point(data.prev[1], data.prev[2]);
-        var second = new paper.Point(data.curr[1], data.curr[2]);
-        var line = new paper.Path.Line(first, second);
-        line.strokeColor = data.id;
-      } else if (size == "small" && id == data.id && data.type == 'small') {
-        if (prev == null) {
-          prev = new paper.Point(data.x, data.y);
-        } else {
-          console.log(size);
-          var curr = new paper.Point(data.x, data.y);
-          var line = new paper.Path.Line(prev, curr);
-          line.strokeColor = id;
-          var toLarge = JSON.stringify({type: "large", id: id, prev: prev, curr: curr});
-          prev = curr;
-          socket.send(toLarge);
-        }
-      }
-    };
-    
-    tool.onMouseMove = function(event) {
-      if (size != "large") {
-        var msg = JSON.stringify({type: 'small', x: event.point.x, y: event.point.y, id: id});
-        socket.send(msg);
+      if (room == 'Home' || room == data.room) {
+        document.getElementById(data.target).style.background = data.color;
       }
     }
     
-    socket.onclose = function (e) {
-      console.error( 'Chat socket closed unexpectedly' );
-    };
-
-    window.addEventListener('devicemotion', function(event) {
-      var accel = event.acceleration;
-      if (accel.x > 30 || accel.y > 30 || accel.z > 30) {
-        var erase = new paper.Shape.Rectangle({
-          from: [0, 0],
-          to: [750, 750],
-          fillColor: "white"
-        });
-      }
-    });
-    
-    window.addEventListener('deviceorientation', function(event) {
-      if (event.gamma > 70) {
-        id = "#"+((1<<24)*Math.random()|0).toString(16);
-      }
-    });
   </script>
 </html>
-
-
-
-
 
 
 
