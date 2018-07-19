@@ -1,0 +1,82 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>P4 Drawing</title>
+    <link rel="stylesheet" type="text/css" href="{% static 'draw/vendor/bootstrap/css/bootstrap.min.css' %}">
+    <script type="text/javascript" src="{% static 'draw/vendor/jquery/jquery-3.3.1.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'draw/vendor/paper/paper-full.min.js' %}"></script>
+    <style type="text/css">
+    </style>
+  </head>
+  
+  <body>
+    <canvas id="myCanvas" width="750px" height="750px" style="border:1px solid #000000;"></canvas>
+  </body>
+  
+  <script>
+    // setting up the canvas and one paper tool
+    var canvas = document.getElementById('myCanvas');
+    paper.setup(canvas);
+    var tool = new paper.Tool();
+    
+    var socket = new WebSocket('ws://p4-jakehong0521-jakehong0521206332.codeanyapp.com:8765/');
+    
+    var id;
+    
+    var size;
+    
+    function getParameterByName(name) {
+      var match = RegExp('[?&]' + name + '=([^&]*)').exec(window.location.search);
+      return match && decodeURIComponent(match[1].replace(/\+/g, ' '));
+    }
+    
+    socket.onopen = function(event) {
+      id = "#"+((1<<24)*Math.random()|0).toString(16);
+      size = getParameterByName('size');
+      console.log(size);
+    };
+    
+    socket.onmessage = function(msg) {
+      var data = JSON.parse(msg.data);
+      console.log(data);
+      if ((size == "small" && id == data.id) || (size == "large")) {
+        var point = new paper.Shape.Circle({
+          center: [data.x, data.y],
+          radius: 15,
+          strokeColor: data.id,
+          fillColor: data.id
+        });
+      }
+    };
+    
+    tool.onMouseMove = function(event) {
+      var msg = JSON.stringify({x: event.point.x, y: event.point.y, id: id});
+      socket.send(msg);
+    }
+    
+    socket.onclose = function (e) {
+      console.error( 'Chat socket closed unexpectedly' );
+    };
+    window.addEventListener('devicemotion', function(event) {
+      var accel = event.acceleration;
+      if (accel.x > 30 || accel.y > 30 || accel.z > 30) {
+        var erase = new paper.Shape.Rectangle({
+          from: [0, 0],
+          to: [750, 750],
+          fillColor: "white"
+        });
+      }
+    });
+    
+    window.addEventListener('deviceorientation', function(event) {
+      if (event.gamma > 70) {
+        id = "#"+((1<<24)*Math.random()|0).toString(16);
+      }
+    });
+  </script>
+  
+
+</html>
